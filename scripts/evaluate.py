@@ -229,6 +229,10 @@ def main():
     ap.add_argument("--model", default="stub-greedy", choices=list(AGENTS))
     ap.add_argument("--out", default="results.json")
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--leaderboard", default="leaderboard.json",
+                    help="Aggregate file; each run appends one row.")
+    ap.add_argument("--label", default=None,
+                    help="Optional label for this run (e.g. HF_MODEL string).")
     args = ap.parse_args()
 
     agent = AGENTS[args.model]
@@ -239,7 +243,14 @@ def main():
     if args.limit:
         records = records[: args.limit]
 
-    for rec in records:
+    try:
+        from tqdm import tqdm
+        iterator = tqdm(records, desc=f"eval[{args.model}]", unit="inst")
+    except ImportError:
+        iterator = records
+        print(f"(install tqdm for progress bars: pip install tqdm)", file=sys.stderr)
+
+    for rec in iterator:
         inst = _instance_from_record(rec)
         raw = agent(inst)
         resp = validate_response(raw)
@@ -263,7 +274,45 @@ def main():
     with open(args.out, "w") as f:
         json.dump(out, f, indent=2)
 
+    # --- Append to cross-run leaderboard ---
+    import datetime
+    label = args.label or (
+        os.environ.get("HF_MODEL") if args.model == "hf"
+        else os.environ.get("IF_CLAUDE_MODEL") if args.model == "claude"
+        else os.environ.get("IF_GEMINI_MODEL") if args.model == "gemini"
+        else args.model
+    )
+    row = {
+        "timestamp": datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "agent": args.model,
+        "label": label,
+        "data": os.path.basename(args.data),
+        "results_file": args.out,
+        **summary,
+    }
+    lb_path = args.leaderboard
+    board = []
+    if os.path.exists(lb_path):
+        try:
+            board = json.load(open(lb_path))
+            if not isinstance(board, list):
+                board = []
+        except Exception:
+            board = []
+    board.append(row)
+    board.sort(key=lambda r: r.get("mean_composite", 0), reverse=True)
+    with open(lb_path, "w") as f:
+        json.dump(board, f, indent=2)
+
     print(json.dumps(summary, indent=2))
+    print(f"\nAppended to {lb_path} ({len(board)} rows total).")
+    print("\n--- Leaderboard (by composite) ---")
+    print(f"{'agent':<14}{'label':<45}{'n':>5}{'comp':>8}{'obj':>8}{'cal':>8}{'att':>8}{'exe':>8}")
+    for r in board:
+        print(f"{r['agent']:<14}{(r.get('label') or '-')[:44]:<45}"
+              f"{r['n']:>5}{r['mean_composite']:>8.3f}"
+              f"{r['mean_objective']:>8.3f}{r['mean_calibration']:>8.3f}"
+              f"{r['mean_attention']:>8.3f}{r['mean_executive']:>8.3f}")
 
 
 if __name__ == "__main__":
