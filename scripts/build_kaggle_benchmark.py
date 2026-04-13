@@ -123,23 +123,7 @@ def register_and_run(instances, limit=None):
     a stub LLM for preview purposes.
     """
     import kaggle_benchmarks as kbench
-    from kaggle_benchmarks.actors.llms import LLMChat, LLMResponse
-
-    _STUB_JSON = json.dumps({
-        "metacog_assessment": [],
-        "critical_unknowns_ranked": [],
-        "exploratory_actions": [],
-        "final_plan": [{"kind": "wait"}],
-        "self_judgment": {
-            "robustness_score": 50,
-            "risks_identified": [],
-            "alternative_if_unknown_X": {},
-        },
-    })
-
-    class StubLLMChat(LLMChat):
-        def invoke(self, messages, system=None, **kwargs):
-            return LLMResponse(content=_STUB_JSON)
+    from kaggle_benchmarks.actors.llms import OpenAI
 
     @kbench.task(name="ignoranceforge_metacog")
     def ignoranceforge_task(llm, instance_id: str, prompt: str,
@@ -149,14 +133,14 @@ def register_and_run(instances, limit=None):
         calibration, attention, and executive sub-scores."""
         response = llm.prompt(prompt)
         rec = json.loads(record_json)
-        composite, breakdown = _score_model_output(response, rec)
+        composite, breakdown = _score_model_output(str(response), rec)
         kbench.assertions.assert_true(
             composite >= 0.5,
             f"Composite {composite:.3f} < 0.5 for {instance_id}. "
             f"Breakdown: {breakdown}",
         )
 
-    shared_llm = StubLLMChat()
+    shared_llm = OpenAI(model="gpt-4o-mini")
     run_records = instances if limit is None else instances[:limit]
     for rec in run_records:
         ignoranceforge_task.run(
