@@ -157,7 +157,7 @@ def generate_instance(seed: int, difficulty: Difficulty = "medium") -> Instance:
     # when the rule's effect is suppressed vs not. Rules whose effect matters
     # more (higher absolute delta) rank first.
     impact = []
-    baseline_final = world.execute([])  # just let rules step once? no actions.
+    baseline_final = world.execute([])  # just let rules step once, no actions.
     baseline_obj = world.objective(baseline_final)
     for rec in hidden_records:
         rule_name = rec["rule_name"]
