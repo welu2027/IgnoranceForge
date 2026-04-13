@@ -133,18 +133,17 @@ def register_and_run(instances, limit=None):
         response = llm.prompt(prompt)
         rec = json.loads(record_json)
         composite, breakdown = _score_model_output(response, rec)
-        # kbench's numeric scoring API — exact assertion form may need to
-        # be adjusted depending on SDK version. The composite is in [0,1].
-        kbench.assertions.assert_numeric_score(
-            composite,
-            expectation=(f"Composite >=0.5 expected for {instance_id}. "
-                         f"Breakdown: {breakdown}"),
+        kbench.assertions.assert_true(
+            composite >= 0.5,
+            f"Composite {composite:.3f} < 0.5 for {instance_id}. "
+            f"Breakdown: {breakdown}",
         )
 
+    shared_llm = kbench.LLMChat()
     run_records = instances if limit is None else instances[:limit]
     for rec in run_records:
         ignoranceforge_task.run(
-            llm=kbench.llm,
+            llm=shared_llm,
             instance_id=rec["id"],
             prompt=rec["prompt"],
             record_json=json.dumps(rec),
