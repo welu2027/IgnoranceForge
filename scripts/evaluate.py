@@ -20,6 +20,16 @@ from typing import Any, Dict, List
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+# Load .env if present so HF_TOKEN etc. are available without manual export.
+_env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
+if os.path.exists(_env_path):
+    for _line in open(_env_path):
+        _line = _line.strip()
+        if not _line or _line.startswith("#") or "=" not in _line:
+            continue
+        _k, _v = _line.split("=", 1)
+        os.environ.setdefault(_k.strip(), _v.strip())
+
 from ignoranceforge import generate_instance  # noqa
 from ignoranceforge.generator import Instance
 from ignoranceforge.world import (
@@ -165,6 +175,31 @@ def claude_agent(inst: Instance) -> Dict[str, Any]:
     return json.loads(text[start:end + 1])
 
 
+def hf_agent(inst: Instance) -> Dict[str, Any]:
+    """LLM agent via Hugging Face Inference Providers. Requires HF_TOKEN in
+    env (loaded from .env if present). Model id from HF_MODEL. Optional
+    HF_PROVIDER pins a specific provider; blank => HF auto-route."""
+    from huggingface_hub import InferenceClient
+    from ignoranceforge import build_prompt
+    token = os.environ["HF_TOKEN"]
+    model = os.environ.get("HF_MODEL", "meta-llama/Llama-3.3-70B-Instruct")
+    provider = os.environ.get("HF_PROVIDER") or "auto"
+    client = InferenceClient(model=model, token=token, provider=provider)
+    prompt = build_prompt(inst)
+    resp = client.chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=2048, temperature=0.0,
+    )
+    text = resp.choices[0].message.content
+    start = text.find("{"); end = text.rfind("}")
+    if start == -1 or end == -1:
+        return {"metacog_assessment": [], "critical_unknowns_ranked": [],
+                "exploratory_actions": [], "final_plan": [],
+                "self_judgment": {"robustness_score": 0, "risks_identified": [],
+                                  "alternative_if_unknown_X": {}}}
+    return json.loads(text[start:end + 1])
+
+
 def gemini_agent(inst: Instance) -> Dict[str, Any]:
     """Real LLM agent using Google Generative AI. Requires GOOGLE_API_KEY
     and `pip install google-generativeai`. Model id from IF_GEMINI_MODEL."""
@@ -184,6 +219,7 @@ AGENTS = {
     "stub-greedy": stub_greedy,
     "claude": claude_agent,
     "gemini": gemini_agent,
+    "hf": hf_agent,
 }
 
 
