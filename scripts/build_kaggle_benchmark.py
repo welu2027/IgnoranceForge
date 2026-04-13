@@ -123,7 +123,8 @@ def register_and_run(instances, limit=None):
     a stub LLM for preview purposes.
     """
     import kaggle_benchmarks as kbench
-    from kaggle_benchmarks.actors.llms import OpenAI
+    from kaggle_benchmarks.actors.llms import GoogleGenAI
+    from google import genai
 
     @kbench.task(name="ignoranceforge_metacog")
     def ignoranceforge_task(llm, instance_id: str, prompt: str,
@@ -140,7 +141,7 @@ def register_and_run(instances, limit=None):
             f"Breakdown: {breakdown}",
         )
 
-    shared_llm = OpenAI(model="gpt-4o-mini")
+    shared_llm = GoogleGenAI(client=genai.Client(), model="gemini-2.0-flash")
     run_records = instances if limit is None else instances[:limit]
     for rec in run_records:
         ignoranceforge_task.run(
