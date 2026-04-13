@@ -1,0 +1,185 @@
+{
+  "id": "IF-medium-7a878950",
+  "seed": 2055702864,
+  "difficulty": "medium",
+  "prompt": "You are studying the Orrek stack, a closed system of 4 lattice points that has never been catalogued. Each lattice point has two measurable attributes \u2014 **tilt** and **flux** \u2014 each an integer in the set {0,1,2,3,4,5,6} (all arithmetic is mod 7).\n\nField agents have partially characterized its dynamics, but some components of the governing edicts could not be resolved and are shown as '?'. Your task is to (1) judge what you truly know versus what is withheld, (2) rank which unknowns matter most, (3) optionally issue exploratory probes, and (4) commit to a plan that maximizes the system's objective score.\n\n---\nInitial readings:\n  L0 (lattice point 0): tilt=2, flux=2\n  L1 (lattice point 1): tilt=6, flux=3\n  L2 (lattice point 2): tilt=2, flux=3\n  L3 (lattice point 3): tilt=5, flux=3\n\nGoverning edicts (fire in the order listed after every action; '?' = unresolved):\n  [R0] Edict \u03b1: whenever flux of L3 exceeds 3, (an unspecified change to L0).\n  [R1] Edict \u03b2: whenever tilt of L0 is odd, flux of L1 collapses to 0.\n  [R2] Edict \u03b3: whenever tilt of L3 is odd, tilt and flux of L2 exchange places.\n  [R3] Edict \u03b4: whenever tilt of L1 is odd, flux of L1 shifts by 1 (mod 7).\n\nUnresolved components (things the field agents could not confirm):\n  R0: effect_kind, effect_delta\nObjective (to be maximized after your final plan executes): sum over lattice points of (tilt * flux mod 7), minus 3 for each lattice point whose flux \u2265 5 (an unstable regime).\nAction budget: at most 7 actions total (exploratory + final plan combined). Probes consume budget.\n\nReturn STRICT JSON matching this schema (and NOTHING else \u2014 no prose, no\nmarkdown fences):\n\n{\n  \"metacog_assessment\": [\n    {\"rule_name\": \"<rule name as shown>\", \"component\": \"trigger_kind\"|\"trigger_k\"|\"effect_kind\"|\"effect_delta\",\n     \"known\": true|false, \"confidence\": 0.0-1.0},\n    ... one entry per (rule, component) pair\n  ],\n  \"critical_unknowns_ranked\": [\"<rule_name>:<component>\", ...],\n  \"exploratory_actions\": [ <up to 5 action objects> ],\n  \"final_plan\":          [ <action objects; total actions <= horizon> ],\n  \"self_judgment\": {\n    \"robustness_score\": 0-100,\n    \"risks_identified\": [\"short phrase\", ...],\n    \"alternative_if_unknown_X\": {\"unknown\": \"<rule_name>:<component>\",\n                                 \"plan\": [<action objects>]}\n  }\n}\n\nAction objects (kind values are fixed tokens; i/j are entity indices):\n  {\"kind\": \"pulse\",   \"i\": <idx>}          flux += 1\n  {\"kind\": \"damp\",    \"i\": <idx>}          flux -= 1\n  {\"kind\": \"shift\",   \"i\": <idx>}          phase += 1\n  {\"kind\": \"unshift\", \"i\": <idx>}          phase -= 1\n  {\"kind\": \"align\",   \"i\": <idx>, \"j\": <idx>}  phase of i copies phase of j\n  {\"kind\": \"observe\", \"i\": <idx>}          no state change; reveals post-step values of entity i\n  {\"kind\": \"wait\"}                         skip a turn\nAfter every action, all rules fire in the listed order.\n",
+  "hidden": {
+    "rules": [
+      {
+        "name": "R0",
+        "trigger": {
+          "kind": "flux_gt",
+          "i": 3,
+          "j": 1,
+          "k": 3
+        },
+        "effect": {
+          "kind": "align_phase",
+          "target": 0,
+          "delta": -1,
+          "source": 3
+        }
+      },
+      {
+        "name": "R1",
+        "trigger": {
+          "kind": "parity_odd",
+          "i": 0,
+          "j": 2,
+          "k": 6
+        },
+        "effect": {
+          "kind": "zero_flux",
+          "target": 1,
+          "delta": 2,
+          "source": 3
+        }
+      },
+      {
+        "name": "R2",
+        "trigger": {
+          "kind": "parity_odd",
+          "i": 3,
+          "j": 1,
+          "k": 6
+        },
+        "effect": {
+          "kind": "swap_pf",
+          "target": 2,
+          "delta": 3,
+          "source": 1
+        }
+      },
+      {
+        "name": "R3",
+        "trigger": {
+          "kind": "parity_odd",
+          "i": 1,
+          "j": 2,
+          "k": 0
+        },
+        "effect": {
+          "kind": "flux_add",
+          "target": 1,
+          "delta": 1,
+          "source": 2
+        }
+      }
+    ],
+    "metacog_ground_truth": [
+      {
+        "rule_name": "R0",
+        "component": "trigger_kind",
+        "true_known": true
+      },
+      {
+        "rule_name": "R0",
+        "component": "trigger_k",
+        "true_known": true
+      },
+      {
+        "rule_name": "R0",
+        "component": "effect_kind",
+        "true_known": false
+      },
+      {
+        "rule_name": "R0",
+        "component": "effect_delta",
+        "true_known": false
+      },
+      {
+        "rule_name": "R1",
+        "component": "trigger_kind",
+        "true_known": true
+      },
+      {
+        "rule_name": "R1",
+        "component": "trigger_k",
+        "true_known": true
+      },
+      {
+        "rule_name": "R1",
+        "component": "effect_kind",
+        "true_known": true
+      },
+      {
+        "rule_name": "R1",
+        "component": "effect_delta",
+        "true_known": true
+      },
+      {
+        "rule_name": "R2",
+        "component": "trigger_kind",
+        "true_known": true
+      },
+      {
+        "rule_name": "R2",
+        "component": "trigger_k",
+        "true_known": true
+      },
+      {
+        "rule_name": "R2",
+        "component": "effect_kind",
+        "true_known": true
+      },
+      {
+        "rule_name": "R2",
+        "component": "effect_delta",
+        "true_known": true
+      },
+      {
+        "rule_name": "R3",
+        "component": "trigger_kind",
+        "true_known": true
+      },
+      {
+        "rule_name": "R3",
+        "component": "trigger_k",
+        "true_known": true
+      },
+      {
+        "rule_name": "R3",
+        "component": "effect_kind",
+        "true_known": true
+      },
+      {
+        "rule_name": "R3",
+        "component": "effect_delta",
+        "true_known": true
+      }
+    ],
+    "true_unknown_ranking": [
+      "R0:effect_kind,effect_delta"
+    ],
+    "initial_state": [
+      {
+        "phase": 2,
+        "flux": 2
+      },
+      {
+        "phase": 6,
+        "flux": 3
+      },
+      {
+        "phase": 2,
+        "flux": 3
+      },
+      {
+        "phase": 5,
+        "flux": 3
+      }
+    ],
+    "horizon": 7,
+    "hidden_fields": [
+      {
+        "rule_name": "R0",
+        "hidden": [
+          "effect_kind",
+          "effect_delta"
+        ]
+      }
+    ],
+    "oracle_best": 24,
+    "oracle_worst": -6
+  }
+}

@@ -1,0 +1,4 @@
+# IgnoranceForge core has zero runtime dependencies.
+# Optional: add your model client library here when wiring real agents.
+# anthropic>=0.34
+# google-generativeai>=0.7
