@@ -1,8 +1,7 @@
 # CIPHER
 ### Calibrated Introspection via Partially Hidden Environment Rules
 
-Procedurally-generated metacognition benchmark for the Kaggle "Measuring Progress
-Toward AGI" hackathon. Each instance is a unique micro-world with invented causal
+Procedurally-generated metacognition benchmark for measuring progress towards AGI. Each instance is a unique micro-world with invented causal
 rules; some rule components are withheld. The model must (1) assess its own
 knowns/unknowns with calibrated confidence, (2) prioritize which unknowns to
 probe, (3) emit exploratory actions, (4) commit to a final plan, and (5) judge
