@@ -141,7 +141,10 @@ def register_and_run(instances, limit=None):
             f"Breakdown: {breakdown}",
         )
 
-    shared_llm = GoogleGenAI(client=genai.Client(), model="gemini-2.0-flash")
+    shared_llm = GoogleGenAI(
+        client=genai.Client(api_key=os.environ["MODEL_PROXY_API_KEY"]),
+        model="gemini-2.0-flash",
+    )
     run_records = instances if limit is None else instances[:limit]
     for rec in run_records:
         ignoranceforge_task.run(
