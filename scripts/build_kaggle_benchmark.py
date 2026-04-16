@@ -1,19 +1,19 @@
-"""Kaggle Benchmarks adapter for IgnoranceForge.
+"""Kaggle Benchmarks adapter for APORIA.
+
+APORIA: A Benchmark for Epistemic Self-Awareness in Language Models
 
 HOW TO USE
 ==========
-1. Create a new Kaggle Notebook (kaggle.com/code → "New Notebook").
+1. Create a new Kaggle Benchmark Task Notebook.
 2. Attach `data/instances.jsonl` as a Dataset input (upload the file to a new
    Kaggle Dataset first, then add it to the notebook).
-3. Paste the entire contents of this file into the notebook.
-4. Also paste the `ignoranceforge/` package contents OR (cleaner) zip the repo
-   and upload as a Dataset, then add it to the notebook. Adjust `sys.path`
-   accordingly in the cell below.
-5. Run all cells. The `@kbench.task` decorator + `.run()` calls will cause
+3. Zip the repo and upload as a Dataset, then add it to the notebook.
+   Adjust `sys.path` accordingly in the cell below.
+4. Run all cells. The `@kbench.task` decorator + `.run()` calls will cause
    kaggle-benchmarks to auto-generate task files and run files under the
    hood. After execution, go to
    https://www.kaggle.com/benchmarks/tasks/new to finalize and publish the
-   benchmark named "ignoranceforge".
+   benchmark named "aporia".
 
 Local preview
 -------------
@@ -116,22 +116,22 @@ def _score_model_output(raw_text, rec):
 
 
 def register_and_run(instances, limit=None):
-    """Define the kbench task and run it once per instance.
+    """Define the APORIA kbench task and run it once per instance.
 
-    This MUST execute inside a Kaggle notebook for the benchmark to be
-    registered with Kaggle's backend. Locally, it will just score against
+    This MUST execute inside a Kaggle Benchmark Task notebook for the benchmark
+    to be registered with Kaggle's backend. Locally, it will just score against
     a stub LLM for preview purposes.
     """
     import kaggle_benchmarks as kbench
     from kaggle_benchmarks.actors.llms import GoogleGenAI
     from google import genai
 
-    @kbench.task(name="ignoranceforge_metacog")
-    def ignoranceforge_task(llm, instance_id: str, prompt: str,
-                            record_json: str):
-        """A single IgnoranceForge instance. The LLM must return strict JSON
-        per the schema shown in the prompt. Scoring combines objective,
-        calibration, attention, and executive sub-scores."""
+    @kbench.task(name="aporia_metacog")
+    def aporia_task(llm, instance_id: str, prompt: str,
+                    record_json: str):
+        """A single APORIA instance. The LLM must return strict JSON per the
+        schema shown in the prompt. Scoring combines objective, calibration,
+        attention, and executive sub-scores to measure epistemic self-awareness."""
         response = llm.prompt(prompt)
         rec = json.loads(record_json)
         composite, breakdown = _score_model_output(str(response), rec)
@@ -147,13 +147,13 @@ def register_and_run(instances, limit=None):
     )
     run_records = instances if limit is None else instances[:limit]
     for rec in run_records:
-        ignoranceforge_task.run(
+        aporia_task.run(
             llm=shared_llm,
             instance_id=rec["id"],
             prompt=rec["prompt"],
             record_json=json.dumps(rec),
         )
-    print(f"Registered + ran {len(run_records)} tasks.")
+    print(f"APORIA: registered + ran {len(run_records)} tasks.")
 
 
 # ---------------------------------------------------------------------------

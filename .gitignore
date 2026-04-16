@@ -6,3 +6,4 @@ results*.json
 .env
 leaderboard.json
 instructions.md
+samplerun.txt
