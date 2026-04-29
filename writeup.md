@@ -16,6 +16,37 @@ The model must: (1) assess its knowledge of each rule with stated confidence, (2
 
 The benchmark covers 1,000 instances at seed 2026: 25% easy (1 hidden rule out of 4), 50% medium (2 of 5), 25% hard (3 of 6). Oracle objectives are precomputed via beam search, normalizing plan quality to [0, 1] regardless of difficulty.
 
+## Sample Instance
+
+Below is a representative medium-difficulty instance (3 visible rules, 2 hidden):
+
+```
+You are studying the Orrek stack, a closed system of 4 lattice points that has never been
+catalogued. Each lattice point has two measurable attributes — tilt and flux — each an
+integer in {0,1,2,3,4,5,6} (all arithmetic is mod 7).
+
+Field agents have characterized 3 of the governing edicts, but 2 additional laws could not
+be recovered in full — their triggers, effects, and even which entities they involve are
+unknown.
+
+Initial readings:
+  E0: tilt=2, flux=2    E1: tilt=6, flux=3
+  E2: tilt=2, flux=3    E3: tilt=5, flux=3
+
+Characterized edicts:
+  [R0] Edict α: whenever flux of E3 exceeds 3, tilt of E0 is drawn to match tilt of E3.
+  [R1] Edict β: whenever tilt of E0 is odd, flux of E1 collapses to 0.
+  [R4] Edict γ: whenever tilt of E3 exceeds 6, tilt of E3 is drawn to match tilt of E0.
+
+Unrecovered edicts (existence confirmed; full form unknown):
+  [H0] (complete form not recovered — trigger, effect, and affected entities all unknown)
+  [H1] (complete form not recovered — trigger, effect, and affected entities all unknown)
+
+Objective: sum(tilt × flux mod 7) − 3 × (entities with flux ≥ 5). Action budget: 7.
+```
+
+The model must return JSON assessing confidence on every (rule, component) pair including H0 and H1, rank the hidden edicts by impact, optionally issue probes, produce a final plan, and provide a contingency plan robust to adversarial hidden rules. Every instance uses freshly invented vocabulary ("Orrek stack", "tilt", "flux", "edicts") — no two instances share terminology.
+
 ## Dataset
 
 The dataset is fully synthetic. No instance reuses vocabulary from any other. Every record contains the prompt and a hidden field with ground truth; the scoring pipeline never leaks ground truth to the model. Memorization is impossible by construction.
@@ -106,4 +137,4 @@ The four-dimensional structure enables diagnostic use beyond leaderboard ranking
 
 CIPHER provides a contamination-proof measure of LLM metacognition that cannot be gamed by any single strategy. The empirical results reveal a consistent finding: scaling improves calibration but not contingency planning. GPT-5.4 mini outperforms GPT-5.4 by 0.104 composite points; Claude Sonnet outperforms Claude Opus by 0.033 points, despite both larger models being superior on standard benchmarks.
 
-Knowing what you do not know and acting appropriately on that knowledge are distinct capabilities that do not scale together. CIPHER is designed to measure both.
+**The central finding: knowing what you do not know and acting appropriately on that knowledge are distinct capabilities that do not scale together. Larger models are better calibrated but worse at contingency planning - a dissociation that is invisible to every existing benchmark and consistent across two independent model families.**
