@@ -63,6 +63,8 @@ The key result: stub-greedy scores **below** stub-random despite near-oracle pla
 
 All frontier models exceed the stub-random baseline (0.521), but scores cluster between 0.52 and 0.63, indicating substantial headroom particularly on executive.
 
+**Note**: Several runs completed successfully and produced scores (visible in individual model logs) but failed to register on the Kaggle leaderboard due to a post-evaluation IOPub timeout. The scores above are taken directly from run logs and are accurate.
+
 ### The Scaling Inversion
 
 Larger models do not consistently outperform smaller ones. GPT-5.4 mini (0.629) outperforms GPT-5.4 (0.525) by 0.104 composite points. The breakdown reveals why:
