@@ -70,10 +70,10 @@ PUBLIC_BENCHMARKS = {
     # None = not available for that benchmark.
     "GPT-5.4 mini":            (0.8455, 0.8308, 0.700),
     "GPT-5.4":                 (0.8748, 0.9167, 0.847),
-    "GPT-5.4 nano":            (0.7717, 0.7753, None),
+    "GPT-5.4 Nano":            (0.7717, 0.7753, None),
     "Claude Sonnet 4.6":       (0.8734, 0.8561, 0.820),
     "Claude Opus 4.7":         (0.8987, 0.8990, 0.853),
-    "Claude Haiku 4.5":        (0.7872, 0.7222, None),
+    "Claude 4.5 Haiku":        (0.7872, 0.7222, None),
     "Gemini 3 Flash Preview":  (None,   None,   0.830),
     "Gemini 3.1 Pro Preview":  (0.9099, 0.9545, 0.910),
     "DeepSeek V3.2":           (0.8492, 0.8030, 0.883),

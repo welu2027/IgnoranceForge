@@ -323,18 +323,22 @@ hedge less.
 CIPHER dimensions are weakly correlated with MMLU/GPQA/MATH_500.
 This means CIPHER is measuring something NEW not captured by standard benchmarks.
 
-Key correlations (n=6 for MMLU/GPQA, n=9 for MATH_500):
-  composite vs MMLU:      r=-0.100 (p=0.84) — essentially zero
-  composite vs GPQA:      r=-0.339 (p=0.49) — essentially zero
+Key correlations (n=8 for MMLU/GPQA, n=9 for MATH_500):
+  composite vs MMLU:      r=-0.272 (p=0.50) — essentially zero
+  composite vs GPQA:      r=-0.337 (p=0.40) — essentially zero
   composite vs MATH_500:  r=-0.173 (p=0.65) — essentially zero
-  attention vs MMLU:      r=-0.979 (p=0.02)* — STRONG NEGATIVE
-  attention vs GPQA:      r=-0.848 (p=0.05)  — near significant
+  attention vs MMLU:      r=-0.681 (p=0.08) — negative trend, not significant
+  attention vs GPQA:      r=-0.772 (p=0.04)* — SIGNIFICANT NEGATIVE
 
-The negative attention correlation means: models that score higher on standard
-benchmarks actually do WORSE at ranking which hidden rules matter most. This
-is a direct empirical challenge to the assumption that capability = metacognition.
+NOTE: Earlier analysis showed r=-0.979 for attention vs MMLU but that was a
+name-mismatch bug (Claude Haiku and GPT Nano weren't matching) leaving only
+n=6 models. The corrected n=8 result is less extreme but the GPQA finding holds.
 
-Within-CIPHER, objective and executive are negatively correlated (r=-0.742, p=0.04):
+The negative attention correlation means: models that score higher on GPQA
+actually do WORSE at ranking which hidden rules matter most. This is a direct
+empirical challenge to the assumption that capability = metacognition.
+
+Within-CIPHER, objective and executive are negatively correlated (r=-0.760, p=0.02):
 good planners are bad hedgers, and vice versa. This shows the two metacognitive
 capacities can dissociate within a model.
 
@@ -387,9 +391,9 @@ valid because individual instance scores are bounded [0,1] and aggregated.
 Pearson correlations use two-tailed t-test p-values. Spearman uses the same
 method on ranks.
 
-For construct validity (section 2), n=6 models for MMLU/GPQA (only 6 of 11 have
-data) and n=9 for MATH_500 (9 of 11 have data). Low n means individual correlations
-are noisy — but the attention vs MMLU finding (r=-0.979, p=0.02) survives.
+For construct validity (section 2), n=8 models for MMLU/GPQA (Gemini Flash,
+Gemma, Qwen have no public scores) and n=9 for MATH_500. Low n means correlations
+are noisy — the significant finding is attention vs GPQA (r=-0.772, p=0.04).
 
 --------------------------------------------------------------------------------
   RELATED WORK / POSITIONING
