@@ -102,7 +102,7 @@ All 11 frontier models exceed the stub-random baseline (0.521), but scores clust
 
 ### The Scaling Inversion
 
-Larger models do not consistently outperform smaller ones. The GPT family presents a three-way inversion: GPT-5.4 Nano (0.632) > GPT-5.4 mini (0.629) > GPT-5.4 (0.525). The composite gap between mini and full is 0.104 points, driven almost entirely by executive:
+Larger models do not consistently outperform smaller ones. The GPT family presents a three-way inversion: GPT-5.4 Nano (0.632) > GPT-5.4 mini (0.629) > GPT-5.4 (0.525). The composite gap between mini and full is 0.103 points, driven almost entirely by executive:
 
 | Model | Calibration | Executive |
 |-------|-------------|-----------|
@@ -112,9 +112,11 @@ Larger models do not consistently outperform smaller ones. The GPT family presen
 
 GPT-5.4 correctly recognizes uncertainty (strong calibration, 0.802) but nearly completely fails on executive (0.169) — its contingency plans do not actually outperform its primary plan under adversarial conditions. This is not a formatting failure; executive is verified by simulation. GPT-5.4 knows what it does not know but cannot translate that awareness into actionable hedging.
 
-Bootstrap CIs confirm the inversion is not noise. GPT-5.4 mini vs. GPT-5.4 composite difference: **+0.104 [+0.061, +0.147], z=4.7, p<0.001**. The executive component alone: **+0.398 [+0.359, +0.437], z=20.3, p<0.001**. The calibration difference is smaller but significant: +0.042 [+0.009, +0.075], z=2.5, p<0.05.
+Empirical bootstrap CIs (n=10,000 resamples, paired by instance) confirm the inversion is not noise. GPT-5.4 mini vs. GPT-5.4 composite: **+0.103 [+0.093, +0.114], z=19.0, p<0.001**. Executive alone: **+0.397 [+0.383, +0.411], z=54.9, p<0.001**. Calibration: +0.042 [+0.029, +0.056], z=6.1, p<0.001. The inversion holds at every difficulty stratum — easy (+0.102, z=10.1), medium (+0.102, z=12.0), hard (+0.108, z=10.9) — ruling out a ceiling or floor effect.
 
-The same pattern holds within Anthropic models: Claude Opus 4.7 (0.590) scores below Claude Sonnet 4.6 (0.623) despite being the larger model. Opus has higher calibration (0.779 vs. 0.746) but lower executive (0.544 vs. 0.611) and attention (0.580 vs. 0.639). The Sonnet–Opus composite gap (+0.033) is not statistically significant [−0.010, +0.076], but the executive gap is: +0.067 [+0.024, +0.110], z=3.0, p<0.01. Across both families, scale correlates with better calibration but not with better contingency planning.
+The same pattern holds within Anthropic models: Claude Opus 4.7 (0.590) scores below Claude Sonnet 4.6 (0.623) despite being the larger model. Unlike the GPT case, Opus has *higher* calibration (0.779 vs. 0.746) — but lower executive (0.544 vs. 0.611), lower attention (0.580 vs. 0.639), and lower objective (0.489 vs. 0.534). The Sonnet–Opus composite gap is +0.033 [+0.014, +0.052], z=3.4, p=0.012. Executive gap: +0.067 [+0.046, +0.087], z=6.5, p<0.001.
+
+Across both families: scale correlates with better calibration but not with better contingency planning. The dissociation is consistent at every difficulty level.
 
 ### Dimension Profiles
 
@@ -136,18 +138,22 @@ Scores are stable across difficulty levels (±0.02–0.03), confirming the bench
 
 ### Statistical Validation
 
-All headline comparisons were tested with parametric bootstrap CIs (n=10,000 resamples, z-score approximation). Key results:
+All headline comparisons use empirical bootstrap CIs (n=10,000 resamples, paired by instance, seed=42). Pairing by instance removes between-instance variance, making the tests substantially more powerful than unpaired approaches.
 
-| Comparison | Dimension | Diff | 95% CI | z | sig |
-|---|---|---|---|---|---|
-| GPT mini vs. GPT full | composite | +0.104 | [+0.061, +0.147] | 4.7 | *** |
-| GPT mini vs. GPT full | executive | +0.398 | [+0.359, +0.437] | 20.3 | *** |
-| GPT mini vs. GPT full | calibration | +0.042 | [+0.009, +0.075] | 2.5 | * |
-| Sonnet vs. Opus | composite | +0.033 | [−0.010, +0.076] | 1.5 | ns |
-| Sonnet vs. Opus | executive | +0.067 | [+0.024, +0.110] | 3.0 | ** |
-| Sonnet vs. Opus | attention | +0.059 | [+0.016, +0.102] | 2.7 | ** |
+| Comparison | Dimension | Diff | 95% CI | z | sign-p | sig |
+|---|---|---|---|---|---|---|
+| GPT mini vs. GPT full | composite | +0.103 | [+0.093, +0.114] | 19.0 | <0.001 | *** |
+| GPT mini vs. GPT full | executive | +0.397 | [+0.383, +0.411] | 54.9 | <0.001 | *** |
+| GPT mini vs. GPT full | calibration | +0.042 | [+0.029, +0.056] | 6.1 | 0.001 | *** |
+| GPT mini vs. GPT full | objective | +0.021 | [+0.006, +0.035] | 2.8 | 0.374 | ** |
+| Sonnet vs. Opus | composite | +0.033 | [+0.014, +0.052] | 3.4 | 0.012 | *** |
+| Sonnet vs. Opus | executive | +0.067 | [+0.046, +0.087] | 6.5 | <0.001 | *** |
+| Sonnet vs. Opus | attention | +0.059 | [+0.027, +0.091] | 3.6 | 0.001 | *** |
+| Sonnet vs. Opus | calibration | −0.033 | [−0.055, −0.011] | −2.9 | <0.001 | ** |
 
-The dissociation between calibration and executive is itself statistically reliable across models: within-dataset Pearson r(calibration, executive) = +0.328, but objective vs. executive = **−0.760 (p=0.02)**. Models that score high on raw plan quality tend to score low on contingency quality — suggesting the two skills trade off at the model level.
+The Claude composite inversion was marginal under unpaired parametric testing; with instance-paired bootstrap it is firmly significant (z=3.4, p=0.012). This highlights why per-instance pairing matters: both models saw the exact same 1,000 instances, so paired testing is both more powerful and more appropriate.
+
+The dissociation between objective and executive is statistically reliable at the model level: Pearson r(objective, executive) = −0.761 (p=0.02) across models. Pooled across all 11,000 instance-model pairs, the same relationship holds at the instance level: r=−0.316 (p<0.001, n=11,000). Models that plan well on a given instance tend to produce worse contingency plans on that same instance — the tradeoff is not just a between-model artifact.
 
 ### Construct Validity
 
@@ -155,15 +161,15 @@ CIPHER dimensions were correlated with three external public benchmarks (MMLU, G
 
 | CIPHER dim | MMLU | GPQA-Diamond | MATH-500 |
 |---|---|---|---|
-| composite | −0.272 (ns) | −0.337 (ns) | −0.173 (ns) |
-| objective | +0.473 (ns) | +0.543 (ns) | +0.074 (ns) |
-| calibration | −0.326 (ns) | −0.080 (ns) | −0.441 (ns) |
-| attention | −0.681 (p=0.08) | **−0.772 (p=0.04)** | −0.594 (p=0.10) |
-| executive | −0.535 (ns) | −0.711 (p=0.06) | −0.012 (ns) |
+| composite | −0.269 (ns) | −0.335 (ns) | −0.174 (ns) |
+| objective | +0.474 (ns) | +0.543 (ns) | +0.074 (ns) |
+| calibration | −0.330 (ns) | −0.084 (ns) | −0.441 (ns) |
+| attention | −0.679 (p=0.08) | **−0.770 (p=0.04)** | −0.596 (p=0.10) |
+| executive | −0.536 (ns) | −0.712 (p=0.06) | −0.011 (ns) |
 
 Low correlations with MMLU and GPQA indicate CIPHER captures something these benchmarks do not. The negative sign on calibration and executive is notable: larger, higher-benchmark models score *lower* on these dimensions — directly replicating the scaling inversion at the aggregate level.
 
-The single significant correlation is attention vs. GPQA-Diamond (r=−0.772, p=0.04), which is also negative. Models that perform well on hard reasoning problems are *worse* at ranking hidden rules by impact — consistent with a pattern where strong reasoners over-rely on their planning capability and underweight the importance of identifying knowledge gaps.
+The single significant correlation is attention vs. GPQA-Diamond (r=−0.770, p=0.04), which is also negative. Models that perform well on hard reasoning problems are *worse* at ranking hidden rules by impact — consistent with a pattern where strong reasoners over-rely on their planning capability and underweight identifying knowledge gaps.
 
 ### Weighting Robustness
 
@@ -176,6 +182,44 @@ Rankings are stable under alternative scoring weights. Spearman rank correlation
 | Meta-heavy (20/35/25/20) | 0.664 | 0.038 |
 
 All three alternatives yield significant rank agreement (p<0.05). GPT-5.4 remains last under every weighting. The main movement is Gemini 3 Flash Preview, which rises to 2nd under plan-heavy weighting (from 3rd overall) due to its high objective score — but even this does not change the core inversion finding.
+
+### Parse Failure Analysis
+
+Models sometimes return malformed JSON that cannot be scored, receiving 0 on all dimensions. Failure rates vary substantially:
+
+| Model | Failures | Rate | Composite (valid only) |
+|---|---|---|---|
+| GPT-5.4 Nano | 1 | 0.1% | 0.632 |
+| GPT-5.4 mini | 0 | 0.0% | 0.629 |
+| GPT-5.4 | 52 | 5.2% | 0.554 |
+| Gemini 3 Flash Preview | 0 | 0.0% | 0.624 |
+| Gemini 3.1 Pro Preview | 0 | 0.0% | 0.622 |
+| Claude Sonnet 4.6 | 52 | 5.2% | 0.657 |
+| Claude Opus 4.7 | **137** | **13.7%** | **0.684** |
+| Claude 4.5 Haiku | 5 | 0.5% | 0.605 |
+| DeepSeek V3.2 | 0 | 0.0% | 0.606 |
+| Qwen 3 Next 80B Instruct | 54 | 5.4% | 0.618 |
+| Gemma 4 31B | 20 | 2.0% | 0.603 |
+
+Claude Opus 4.7's 13.7% failure rate is the most striking result. Its valid-only composite is 0.684, which would rank it 3rd overall — above Claude Sonnet 4.6. The Claude inversion is therefore partly a JSON output reliability story: Opus fails to produce parseable responses on 1 in 7 instances, costing it nearly 0.10 composite points. This suggests the scaling inversion in the Claude family has two components: a genuine metacognitive skill gap (executive, attention) and a format reliability gap that independently penalizes the larger model.
+
+All reported scores include failures as zeros, matching real deployment conditions. A model that produces invalid output on 14% of instances is genuinely less useful regardless of how well it performs when it does respond.
+
+### Score Consistency
+
+In addition to mean performance, CIPHER reveals differences in consistency:
+
+| Model | Mean | Std | p10 | p90 |
+|---|---|---|---|---|
+| GPT-5.4 Nano | 0.632 | 0.096 | 0.498 | 0.747 |
+| GPT-5.4 mini | 0.629 | 0.095 | 0.491 | 0.743 |
+| GPT-5.4 | 0.525 | 0.152 | 0.384 | 0.660 |
+| Gemini 3 Flash Preview | 0.624 | 0.106 | 0.477 | 0.748 |
+| Claude Sonnet 4.6 | 0.623 | 0.171 | 0.495 | 0.763 |
+| Claude Opus 4.7 | 0.590 | 0.250 | 0.000 | 0.784 |
+| DeepSeek V3.2 | 0.606 | 0.093 | 0.472 | 0.716 |
+
+GPT-5.4 Nano and GPT-5.4 mini are the most consistent models (std ≈ 0.095–0.096). GPT-5.4 is more variable (std=0.152), and Claude Opus 4.7 is the most erratic (std=0.250), with a p10 of 0.000 driven by its parse failure rate. DeepSeek V3.2 has the lowest std among non-GPT models (0.093), suggesting reliable if not top performance. Consistency matters for deployment: a model with a lower mean but tighter distribution may be preferable to a high-ceiling, high-variance model for safety-critical applications.
 
 ## Objective Function and Robustness
 
